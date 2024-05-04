@@ -1,0 +1,69 @@
+using System;
+using System.IO;
+
+public class FileWatcher
+{
+    private FileSystemWatcher watcher;
+    private string directoryToWatch;
+
+    public FileWatcher(string path)
+    {
+        directoryToWatch = path;
+        watcher = new FileSystemWatcher(directoryToWatch);
+
+        // İzlenecek değişiklik türlerini belirle
+        watcher.NotifyFilter = NotifyFilters.LastAccess
+                             | NotifyFilters.LastWrite
+                             | NotifyFilters.FileName
+                             | NotifyFilters.DirectoryName;
+
+        // Hangi dosya tipleri izlenecek?
+        watcher.Filter = "*.*";
+
+        // Event handler'ları ata
+        watcher.Changed += OnChanged;
+        watcher.Created += OnChanged;
+        watcher.Deleted += OnChanged;
+        watcher.Renamed += OnRenamed;
+    }
+
+    // İzlemeyi başlat
+    public void StartWatching()
+    {
+        watcher.EnableRaisingEvents = true;
+        Console.WriteLine($"Dosya izleme {directoryToWatch} klasöründe başlatıldı.");
+    }
+
+    // İzlemeyi durdur
+    public void StopWatching()
+    {
+        watcher.EnableRaisingEvents = false;
+        Console.WriteLine($"Dosya izleme {directoryToWatch} klasöründe durduruldu.");
+    }
+
+    private void OnChanged(object sender, FileSystemEventArgs e)
+    {
+        Console.WriteLine($"Dosya: {e.FullPath} {e.ChangeType}");
+    }
+
+    private void OnRenamed(object sender, RenamedEventArgs e)
+    {
+        Console.WriteLine($"Dosya adı: {e.OldFullPath} yeni adı: {e.FullPath}");
+    }
+}
+
+class Program
+{
+    static void Main()
+    {
+        // İzlemek istediğiniz klasör
+        string path = @"C:\izlenecek_klasor";
+        var fileWatcher = new FileWatcher(path);
+
+        fileWatcher.StartWatching();
+        Console.WriteLine("Çıkmak için 'q' tuşuna basın.");
+
+        while (Console.Read() != 'q');
+        fileWatcher.StopWatching();
+    }
+}
