@@ -1,0 +1,48 @@
+using System;
+using System.Collections.Generic;
+using System.Data.SqlClient;
+public class DatabaseManager
+{
+    private string connectionString;
+
+    public DatabaseManager(string connectionString)
+    {
+        this.connectionString = connectionString;
+    }
+
+    public List<string> GetData()
+    {
+        List<string> dataList = new List<string>();
+
+        using (SqlConnection connection = new SqlConnection(connectionString))
+        {
+            connection.Open();
+            SqlCommand command = new SqlCommand("SELECT Data FROM MyTable", connection);
+
+            using (SqlDataReader reader = command.ExecuteReader())
+            {
+                while (reader.Read())
+                {
+                    dataList.Add(reader["Data"].ToString());
+                }
+            }
+        }
+
+        return dataList;
+    }
+}
+class Program
+{
+    static void Main(string[] args)
+    {
+        string connectionString = "Server=myServerAddress;Database=myDataBase;User Id=myUsername;Password=myPassword;";
+        DatabaseManager dbManager = new DatabaseManager(connectionString);
+
+        List<string> data = dbManager.GetData();
+
+        foreach (var item in data)
+        {
+            Console.WriteLine(item);
+        }
+    }
+}
